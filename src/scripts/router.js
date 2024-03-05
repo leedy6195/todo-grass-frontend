@@ -20,7 +20,7 @@ const routes = [
         beforeEnter: async (to, from, next) => {
             const { nickname } = to.params;
             try {
-                const res = await axios.get(`/api/todos/${nickname}`);
+                const res = await axios.get(`/api/todos/nicknames/${nickname}`);
                 if (res.data.header.code === 200) {
                     next();
                 } else {
@@ -34,7 +34,6 @@ const routes = [
     },
     { path: '/:pathMatch(.*)*', component: NotFound, name: 'NotFound',
         beforeEnter: (to, from, next) => {
-            console.log(from.fullPath);
             window.history.pushState({}, '', to.fullPath);
             next();
         }

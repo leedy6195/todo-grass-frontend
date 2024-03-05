@@ -17,8 +17,12 @@ export default {
   components: {Header},
   setup() {
     const check = () => {
-      axios.get("/api/members/check").then(({data}) => {
-          store.commit('setSignedIn', data);
+      axios.get("/api/members/check").then((response) => {
+          store.commit('setSignedIn', response.data.data);
+          if (!response.data.data) {
+            console.log("setMemberInfo 비움")
+            store.commit('setMemberInfo', {email: '', nickname: ''})
+          }
       })
     }
 

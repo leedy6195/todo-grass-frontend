@@ -41,6 +41,7 @@
 <script>
 import axios from "axios";
 import router from "@/scripts/router";
+import store from "@/scripts/store";
 
 export default {
   data() {
@@ -68,8 +69,8 @@ export default {
         axios.post(`/api/members/signin`, {
           email: this.email,
           password: this.password
-        }).then(() => {
-          alert('로그인 성공!');
+        }).then((response) => {
+          store.commit('setMemberInfo', response.data.data);
           router.push('/');
         }).catch(() => {
           alert('로그인 실패!');

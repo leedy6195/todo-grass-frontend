@@ -5,6 +5,7 @@
         <div class="card border-0 rounded-lg shadow">
           <div class="card-body p-5">
             <h3 class="text-center mb-4">Sign Up</h3>
+
             <form @submit.prevent="submitForm">
 
               <div class="form-floating mb-3">

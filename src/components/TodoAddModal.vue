@@ -2,16 +2,16 @@
   <div class="modal" v-if="show">
     <div class="modal-content">
       <span class="close" @click="closeModal">&times;</span>
-      <h2>새로운 할 일 추가</h2>
+      <h2>{{ modalTitle }}</h2>
       <div class="form-group">
         <label for="title">제목:</label>
-        <input type="text" class="form-control" v-model="title" id="title">
+        <input type="text" class="form-control" v-model="todoTitle" id="title">
       </div>
       <div class="form-group">
         <label for="description">설명:</label>
-        <textarea class="form-control" v-model="description" id="description"></textarea>
+        <textarea class="form-control" v-model="todoDescription" id="description"></textarea>
       </div>
-      <button @click="addNewItem" class="btn btn-primary">추가</button>
+      <button @click="modalShowAddItem ? addNewItem() : editItem()" class="btn btn-primary">{{ modalShowAddItem ? '추가' : '수정' }}</button>
     </div>
   </div>
 </template>
@@ -20,28 +20,56 @@
 import axios from "axios";
 
 export default {
-  props: ['show'],
+  props: ['show', 'todoId', 'modalTitleProp', 'todoTitleProp', 'todoDescriptionProp'],
   data() {
     return {
-      title: '',
-      description: ''
+      modalTitle: '',
+      todoTitle: '',
+      todoDescription: '',
+      modalShowAddItem: false
     };
   },
+  watch: {
+    todoId: {
+      immediate: true,
+
+      handler(newVal) {
+        if (newVal) {
+          this.modalTitle = this.modalTitleProp || 'Todo Item 수정';
+          this.modalShowAddItem = false;
+          this.getTodoItem();
+        } else {
+          this.modalTitle = this.modalTitleProp || 'Todo Item 추가';
+          this.modalShowAddItem = true;
+        }
+      }
+    }
+  },
   methods: {
+    getTodoItem() {
+      axios.get(`/api/todos/${this.todoId}`).then((res) => {
+        this.todoTitle = this.todoTitleProp || res.data.data.title;
+        this.todoDescription = this.todoDescriptionProp || res.data.data.description;
+      }).catch(() => {
+        alert(`Todo Item을 불러오는데 실패했습니다.`)
+      })
+    },
     closeModal() {
       this.$emit('close');
     },
     addNewItem() {
-      axios.post(`/api/todos`, {
-        title: this.title,
-        description: this.description
+      // 추가 로직
+    },
+    editItem() {
+      axios.put(`/api/todos/${this.todoId}`, {
+        title: this.todoTitle,
+        description: this.todoDescription
       }).then(() => {
-        alert('added successfully')
-        this.$emit('afterAdd')
-        this.closeModal()
+        alert('Todo Item 수정 성공');
+        this.closeModal();
       }).catch(() => {
-        alert('failed')
-      })
+        alert('Todo Item 수정 실패');
+      });
     }
   }
 };

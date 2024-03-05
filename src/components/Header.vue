@@ -36,6 +36,7 @@ export default {
           .then(() => {
             alert('로그아웃 성공');
             store.commit('setSignedIn', false);
+            store.commit('setMemberInfo', {email: '', nickname: ''})
             router.push('/');
           })
           .catch(() => {
