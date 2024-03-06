@@ -4,7 +4,7 @@
       <li class="list-group-item d-flex justify-content-between align-items-center" v-for="(item, index) in todoItems" :key="index">
         {{ item.title }}
         <div>
-          <span @click="editItem(item.id)" class="icon-edit m-2">
+          <span @click="openEditModal(item.id)" class="icon-edit m-2">
             <font-awesome-icon icon="edit" />
           </span>
           <span @click="deleteItem(item.id)" class="icon-delete m-2">
@@ -25,26 +25,30 @@
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import TodoAddModal from "@/components/TodoAddModal.vue";
 import { ref } from "vue";
+import axios from "axios";
 
 export default {
   name: "TabTodoItems",
   components: { TodoAddModal, FontAwesomeIcon },
   props: ["todoItems"],
-  setup(props) {
+  setup() {
     const modalShow = ref(false);
     const selectedTodoId = ref(null);
 
-    const editItem = (todoId) => {
-      // 수정 기능 구현
-      console.log(todoId);
-      // 모달 열기
+    const openEditModal = (todoId) => {
       selectedTodoId.value = todoId;
       modalShow.value = true;
     };
 
-    const deleteItem = (index) => {
-      // 삭제 기능 구현
-      console.log("삭제:", props.todoItems[index]);
+    const deleteItem = (todoId) => {
+      if(confirm("Do you want to delete this item?")) {
+        axios.delete(`/api/todos/${todoId}`).then(() => {
+          alert("Todo Item이 삭제되었습니다.");
+          location.reload();
+        }).catch(() => {
+          alert("Todo Item을 삭제하는데 실패했습니다.");
+        });
+      }
     };
 
     const openModal = () => {
@@ -52,12 +56,10 @@ export default {
     };
 
     const closeModal = () => {
-      // 모달 닫기
       modalShow.value = false;
     };
 
-    // todoItems와 modalShow, modalTitle, modalContent를 반환하여 템플릿에서 사용할 수 있도록 합니다.
-    return { modalShow, selectedTodoId, editItem, deleteItem, openModal, closeModal };
+    return { modalShow, selectedTodoId, openEditModal, deleteItem, openModal, closeModal };
   }
 };
 </script>
