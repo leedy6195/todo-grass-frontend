@@ -71,7 +71,7 @@ export default {
           password: this.password
         }).then((response) => {
           store.commit('setMemberInfo', response.data.data);
-          router.push('/');
+          router.push(`/${response.data.data.nickname}`);
         }).catch(() => {
           alert('로그인 실패!');
         });

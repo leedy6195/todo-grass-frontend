@@ -1,19 +1,18 @@
 <template>
   <div>
-    <!-- Profile Header -->
     <div class="row">
       <div class="col-md-3">
         <div class="card">
           <div class="card-body text-center">
-            <img src="https://avatars.githubusercontent.com/u/583231?s=400&v=4" class="img-fluid rounded-circle mb-3"
+            <img :src="visitedMemberInfo.profileImgPath" class="img-fluid rounded-circle mb-3"
                  alt="Avatar">
-            <h5 class="card-title">John Doe</h5>
-            <p class="card-text">Software Developer</p>
+            <h5 class="card-title">{{ visitedMemberInfo.nickname }}</h5>
+            <p class="card-text">{{ visitedMemberInfo.email }}</p>
+            <router-link to="/profile" v-if="isMyPage"><font-awesome-icon icon="edit"/></router-link>
           </div>
         </div>
       </div>
       <div class="col-md-9">
-        <!-- Custom Tabs -->
         <div class="custom-tabs">
           <div class="tab" v-for="(tab, index) in filteredTabs" :key="index" @click="activateTab(index)"
                :class="{ 'active': activeTab === index }">
@@ -29,13 +28,11 @@
           </div>
           <div class="tab-pane fade" :class="{ 'show active': activeTab === 1 }" id="todo-items" role="tabpanel"
                aria-labelledby="todo-items-tab">
-            <TabTodoItems :todoItems="todoItems"/>
+            <TabTodoItems :todoItems="todoItems" @change="getTodos"/>
           </div>
           <div class="tab-pane fade" :class="{ 'show active': activeTab === 2 }" id="following" role="tabpanel"
                aria-labelledby="following-tab">
-            <!-- Following tab content -->
           </div>
-          <!-- Add more tab content as needed -->
         </div>
       </div>
     </div>
@@ -46,19 +43,28 @@
 import TabOverview from "@/components/TabOverview.vue";
 import TabTodoItems from "@/components/TabTodoItems.vue";
 import axios from "axios";
-
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
 export default {
   name: 'MemberHome',
-  components: {TabTodoItems, TabOverview},
+  components: {TabTodoItems, TabOverview, FontAwesomeIcon},
   data() {
     return {
       activeTab: 0,
-      tabs: ['Overview', 'Todo Items', 'Following'],
+      tabs: ['Overview', 'Todo Items', 'Daily Report'],
+      visitedMemberInfo: {
+        email: '',
+        nickname: '',
+        profileImgPath: ''
+      },
+      isMyPage: false,
       todoItems: []
     };
   },
   mounted() {
+
+
+    this.getMemberInfo();
 
     this.getTodos();
   },
@@ -67,18 +73,26 @@ export default {
       return this.tabs.filter((tab, index) => {
 
         if (index === 0) {
-          return true; // 항상 첫 번째 탭은 표시
+          return true;
         }
         if (index === 1 || index === 2) {
-          console.log(this.$store.state.memberInfo.nickname)
-
-          return this.$route.params.nickname === JSON.parse(sessionStorage.getItem('vuex')).memberInfo.nickname;
+          return this.isMyPage;
         }
         return false; // 나머지 탭은 표시하지 않음
       });
     }
   },
   methods: {
+    getMemberInfo() {
+      axios.get(`/api/members/nicknames/${this.$route.params.nickname}`).then((res) => {
+        const memberInfo = res.data.data;
+        this.visitedMemberInfo.email = memberInfo.email;
+        this.visitedMemberInfo.nickname = memberInfo.nickname;
+        this.visitedMemberInfo.profileImgPath = memberInfo.profileImgPath;
+
+        this.isMyPage = this.$route.params.nickname === JSON.parse(sessionStorage.getItem('vuex')).memberInfo.nickname;
+      })
+    },
     getTodos() {
       axios.get(`/api/todos/nicknames/${this.$route.params.nickname}`).then((res) => {
         this.todoItems = res.data.data.map(todo => {

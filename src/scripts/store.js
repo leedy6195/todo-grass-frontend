@@ -18,9 +18,7 @@ const store = createStore({
             state.isSignedIn = payload;
         },
         setMemberInfo(state, payload) {
-            console.log(payload)
             state.memberInfo = payload;
-            console.log(state.memberInfo)
         }
     },
     plugins: [createPersistedState({

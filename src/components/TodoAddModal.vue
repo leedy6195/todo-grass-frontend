@@ -1,5 +1,5 @@
 <template>
-  <div class="modal" v-if="show">
+  <div class="modal" v-if="showModal">
     <div class="modal-content">
       <span class="close" @click="closeModal">&times;</span>
       <h2>{{ modalTitle }}</h2>
@@ -11,102 +11,160 @@
         <label for="description">설명:</label>
         <textarea class="form-control" v-model="todoDescription" id="description"></textarea>
       </div>
-      <button @click="modalShowAddItem ? addNewItem() : editItem()" class="btn btn-primary">{{ modalShowAddItem ? '추가' : '수정' }}</button>
+      <button @click="isAddModal ? addNewItem() : editItem()" class="btn btn-primary">{{
+          isAddModal ? '추가' : '수정'
+        }}
+      </button>
     </div>
   </div>
 </template>
 
-<script>
-import axios from "axios";
+<script setup>
+import {ref, watchEffect, defineProps, defineEmits} from 'vue';
+import axios from 'axios';
 
-export default {
-  props: ['show', 'todoId', 'modalTitleProp', 'todoTitleProp', 'todoDescriptionProp'],
-  data() {
-    return {
-      modalTitle: '',
-      todoTitle: '',
-      todoDescription: '',
-      modalShowAddItem: false
-    };
-  },
-  watch: {
-    todoId: {
-      immediate: true,
+const props = defineProps({
+  showModal: Boolean,
+  todoId: Number
+});
 
-      handler(newVal) {
-        if (newVal) {
-          this.modalTitle = this.modalTitleProp || 'Todo Item 수정';
-          this.modalShowAddItem = false;
-          this.getTodoItem();
-        } else {
-          this.modalTitle = this.modalTitleProp || 'Todo Item 추가';
-          this.modalShowAddItem = true;
-        }
-      }
-    }
-  },
-  methods: {
-    getTodoItem() {
-      axios.get(`/api/todos/${this.todoId}`).then((res) => {
-        this.todoTitle = this.todoTitleProp || res.data.data.title;
-        this.todoDescription = this.todoDescriptionProp || res.data.data.description;
-      }).catch(() => {
-        alert(`Todo Item을 불러오는데 실패했습니다.`)
+const emits = defineEmits(['close', 'change'])
+
+const modalTitle = ref('');
+const todoTitle = ref('');
+const todoDescription = ref('');
+const isAddModal = ref(false);
+
+const emptyTodoItem = () => {
+  todoTitle.value = '';
+  todoDescription.value = '';
+};
+
+watchEffect(() => {
+  if (props.todoId) {
+    modalTitle.value = 'Todo Item 수정';
+    isAddModal.value = false;
+    getTodoItem();
+  } else {
+    modalTitle.value = 'Todo Item 추가';
+    isAddModal.value = true;
+    emptyTodoItem();
+  }
+});
+
+const getTodoItem = () => {
+  axios.get(`/api/todos/${props.todoId}`)
+      .then((res) => {
+        todoTitle.value = res.data.data.title;
+        todoDescription.value = res.data.data.description;
       })
-    },
-    closeModal() {
-      this.$emit('close');
-    },
-    addNewItem() {
-      // 추가 로직
-    },
-    editItem() {
-      axios.put(`/api/todos/${this.todoId}`, {
-        title: this.todoTitle,
-        description: this.todoDescription
-      }).then(() => {
-        alert('Todo Item 수정 성공');
-        this.closeModal();
-      }).catch(() => {
+      .catch(() => {
+        alert(`Todo Item을 불러오는데 실패했습니다.`);
+      });
+};
+
+const closeModal = () => {
+  emits('close');
+};
+
+const addNewItem = () => {
+  axios.post(`/api/todos`, {
+    title: todoTitle.value,
+    description: todoDescription.value
+  })
+      .then(() => {
+        emits('change');
+        closeModal();
+      })
+      .catch(() => {
+        alert('Todo Item 추가 실패');
+      });
+};
+
+const editItem = () => {
+  axios.put(`/api/todos/${props.todoId}`, {
+    title: todoTitle.value,
+    description: todoDescription.value
+  })
+      .then(() => {
+        emits('change');
+        closeModal();
+      })
+      .catch(() => {
         alert('Todo Item 수정 실패');
       });
-    }
-  }
 };
 </script>
 
 <style scoped>
 .modal {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: fixed;
   z-index: 1;
   left: 0;
   top: 0;
   width: 100%;
   height: 100%;
-  overflow: auto;
-  background-color: rgba(0,0,0,0.4);
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 .modal-content {
-  background-color: #fefefe;
-  margin: 15% auto;
+  background-color: #fff;
+  border-radius: 10px;
   padding: 20px;
-  border: 1px solid #888;
-  width: 60%;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  width: 400px;
+  max-width: 90%;
 }
 
 .close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+  font-size: 24px;
+  color: #555;
 }
 
-.close:hover,
-.close:focus {
-  color: black;
-  text-decoration: none;
+.form-group {
+  margin-bottom: 15px;
+}
+
+label {
+  font-weight: bold;
+  margin-bottom: 5px;
+  display: block;
+}
+
+input[type="text"],
+textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: #007bff;
+  color: #fff;
   cursor: pointer;
 }
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.btn-primary {
+  background-color: #007bff;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
 </style>

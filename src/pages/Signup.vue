@@ -78,7 +78,6 @@ export default {
 
       // 모든 유효성 검사 통과 시 폼 제출
       if (this.isEmailValid && this.isPasswordValid && this.password === this.confirmPassword && this.isNicknameValid) {
-        //console.log('회원가입 폼이 제출되었습니다.');
         axios.post(`/api/members/signup`, {
           nickname: this.nickname,
           email: this.email,

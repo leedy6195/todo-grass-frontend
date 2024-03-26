@@ -51,6 +51,8 @@ export default {
           .on('mouseout', () => {
             this.hideTooltip();
           });
+
+
     },
     showTooltip(event, d) {
       const tooltip = d3.select('#tooltip');
@@ -109,6 +111,7 @@ export default {
   font-size: 14px;
   opacity: 0; /* 초기에는 툴팁을 숨김 */
   pointer-events: none; /* 툴팁이 이벤트를 가로채지 않도록 함 */
+  white-space: nowrap;
 }
 
 .tooltip-content {

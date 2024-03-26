@@ -6,17 +6,21 @@ import Signin from "@/pages/Signin.vue";
 import NotFound from "@/pages/NotFound.vue";
 import axios from "axios";
 import MemberHome from "@/pages/MemberHome.vue";
+import Profile from "@/pages/Profile.vue";
+import store from "@/scripts/store";
 
 
 
 const routes = [
-    {path: '/', component: Home},
-    {path: '/signup', component: Signup},
-    {path: '/signin', component: Signin},
+    {path: '/', component: Home, meta: { requiresAuth: false }},
+    {path: '/signup', component: Signup, meta: { requiresAuth: false }},
+    {path: '/signin', component: Signin, meta: { requiresAuth: false }},
+    {path: '/profile', component: Profile, meta: { requiresAuth: true }},
     {
         path: '/:nickname',
         component: MemberHome,
         name: 'MemberHome',
+        meta: { requiresAuth: false },
         beforeEnter: async (to, from, next) => {
             const { nickname } = to.params;
             try {
@@ -45,6 +49,13 @@ const router = createRouter({
     routes
 })
 
+router.beforeEach((to, from, next) => {
+    if(to.meta.requiresAuth && !store.state.isSignedIn) {
+        next('/signin')
+    } else {
+        next()
+    }
+})
 
 
 export default router;

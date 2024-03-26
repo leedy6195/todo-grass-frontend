@@ -1,7 +1,7 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-      <router-link to="/" class="navbar-brand">GitHub-like Design</router-link>
+      <router-link to="/" class="navbar-brand">Todo-Grass</router-link>
       <!-- Search bar -->
       <div class="input-group input-group-sm" style="max-width: 200px; margin-left: auto;">
         <input type="text" class="form-control bg-dark text-white placeholder-gray border-gray" placeholder="Search..."
@@ -11,11 +11,11 @@
 
       <!-- Sign In and Sign Up -->
       <ul class="navbar-nav">
-        <li class="nav-item">
+        <li class="nav-item m-2">
           <router-link to="/signin" class="nav-link" v-if="!$store.state.isSignedIn">Sign In</router-link>
           <a class="nav-link" @click="signout()" v-else>Sign Out</a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item m-2">
           <router-link to="/signup" class="nav-link">Sign Up</router-link>
         </li>
       </ul>
@@ -59,4 +59,9 @@ export default {
 .text-white {
   color: #ccc !important;
 }
+
+.navbar-nav {
+  flex-direction: row;
+}
+
 </style>
